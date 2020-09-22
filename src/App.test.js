@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import rendered from 'react-test-renderer';
-import App, { Search}from './App';
+import App, { Search,Button,Table}from './App';
 
 describe('App', () => {
 
@@ -32,3 +32,35 @@ describe('Search', () => {
      });
 });
 
+describe('Button', () => {
+  it('renders without crashing', () => {
+    const div = document.createElement('div');
+    ReactDOM.render(<Button />, div);
+    ReactDOM.unmountComponentAtNode(div);
+    const component = rendered.create(
+      <Button/>
+    );
+    const tree = component.toJSON();
+    expect(tree).toMatchSnapshot();
+  });
+});
+
+describe('Table', () => {
+
+  const props = {
+    list: [
+      { title: '1', author: '1', num_comments: 1, points: 2, objectID: 'y' },
+      { title: '2', author: '2', num_comments: 1, points: 2, objectID: 'z' },
+    ],
+  };
+  it('render without crashing', () => { 
+    const div = document.createElement('div');
+    ReactDOM.render(<Table{...props} />, div);
+    ReactDOM.unmountComponentAtNode(div);
+    const component = rendered.create(
+      <Table {...props}/>
+    );
+    const tree = component.toJSON();
+    expect(tree).toMatchSnapshot()
+  });
+});
