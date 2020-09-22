@@ -33,3 +33,14 @@ exports[`App has a valid snapshot 1`] = `
   </div>
 </div>
 `;
+
+exports[`Search renders without crashing 1`] = `
+<form>
+  <input
+    type="text"
+  />
+  <button
+    type="submit"
+  />
+</form>
+`;
