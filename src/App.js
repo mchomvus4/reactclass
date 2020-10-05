@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import { sortBy } from 'lodash';
 import './App.css';
 import Search from './Components/Search'
 import Table from './Components/Table'
@@ -16,12 +17,15 @@ const PARAM_HPP = 'hitsPerPage=';
 class App extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       result: null,
       searchKey:'',
       searchTerm: DEFAULT_QUERY,
-      error:null,
+      error: null,
+      isLoading: false,
+      sortKey:'NONE',
+      isSortReverse:false,
+
     };
     this.needsToSearchTopStories = this.needsToSearchTopStories.bind(this);
     this.setSearchTopStories = this.setSearchTopStories.bind(this);
@@ -29,6 +33,7 @@ class App extends Component {
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
+    this.onSort = this.onSort.bind(this);
   }
 
    needsToSearchTopStories(searchTerm) {
@@ -50,10 +55,12 @@ class App extends Component {
       {
         ...results,
         [searchKey]: {hits: updatedHits, page}
-      }
+      },
+      isLoading:false,
     });
     }
-  fetchSearchTopStories (searchTerm, page=0) {
+  fetchSearchTopStories (searchTerm, page = 0) {
+    this.setState({ isLoading: true });
     axios(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}`)
       .then(result => this.setSearchTopStories(result.data))
       .catch(error =>this.setState({error}));
@@ -91,28 +98,50 @@ class App extends Component {
       }
     });
   }
+  onSort (sortKey) {
+    const isSortReverse = this.state.sortKey === sortKey && !this.state.isSortReverse;
+    this.setState({ sortKey, isSortReverse });
+  }
+
+
 
   render () {
-    const { searchTerm, results,searchKey,error } = this.state;
+    const {
+      searchTerm,
+      results,
+      searchKey,
+      error,
+      isLoading,
+      sortKey,
+      isSortReverse
+    } = this.state;
+    
     const page = (results &&
       results[searchKey] &&
       results[searchKey].page
     ) || 0;
+
     
     const list = (
       results &&
       results[searchKey] &&
       results[searchKey].hits
     ) || [];
+
+
     if (error) {
       return <p>Something went wrong.</p>;
     }
+
+
     return (
       <div className="page">
         <div className="interactions">
           <Search
             value={searchTerm}
             onChange={this.onSearchChange}
+            onSubmit={this.onSearchSubmit}
+
           >
             Search
           </Search>
@@ -120,14 +149,20 @@ class App extends Component {
         {results &&
           
           <Table
-            list={list}
-            onDismiss={this.onDismiss}
+          list={list}
+          sortKey={sortKey}
+          isSortReverse={isSortReverse}
+          onSort={this.onSort}
+          onDismiss={this.onDismiss}
           />
         }
         <div className="interactions">
-          <Button onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}>
-            More
-          </Button>
+          <ButtonWithLoading
+            isLoading={isLoading}
+            onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}>
+              More
+          </ButtonWithLoading>
+        
         </div>
         
       </div>
@@ -135,6 +170,14 @@ class App extends Component {
     );
   }
 }
+const Loading = () =>
+  <div>Please wait page Loading...</div>
+const withLoading = (Component) => ({ isLoading, ...rest }) =>
+  isLoading
+    ? <Loading />
+    : <Component{...rest} />
+const ButtonWithLoading = withLoading(Button);
+  
 export default App;
 
 export {
