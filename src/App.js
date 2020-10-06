@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { sortBy } from 'lodash';
 import './App.css';
 import Search from './Components/Search'
 import Table from './Components/Table'
