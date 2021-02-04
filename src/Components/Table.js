@@ -13,6 +13,7 @@ const midColumn = {
 const smallColumn = {
   width: '10%',
 };
+
 const SORTS = {
   NONE: list => list,
   TITLE: list => sortBy(list, 'title'),
